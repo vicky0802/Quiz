@@ -7,36 +7,44 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.content.ContentValues;
 import com.example.quiz.QuizContract.*;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class QuizDbHelper extends SQLiteOpenHelper {
-    private static final String DATABASE_NAME = "MyAwesomeQuiz.db";
+//    private static final String DATABASE_NAME = "MyAwesomeQuiz.db";
+    private static final String DATABASE_NAME = "database.sqlite";
     private static final int DATABASE_VERSION = 1;
 
     private SQLiteDatabase db;
+    private final Context context;
 
     public QuizDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
         this.db = db;
 
-        final String SQL_CREATE_QUESTIONS_TABLE = "CREATE TABLE " +
-                QuestionsTable.TABLE_NAME + " ( " +
-                QuestionsTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                QuestionsTable.COLUMN_QUESTION + " TEXT, " +
-                QuestionsTable.COLUMN_OPTION1 + " TEXT, " +
-                QuestionsTable.COLUMN_OPTION2 + " TEXT, " +
-                QuestionsTable.COLUMN_OPTION3 + " TEXT, " +
-                QuestionsTable.COLUMN_ANSWER_NR + " INTEGER" +
-                ")";
-
-        db.execSQL(SQL_CREATE_QUESTIONS_TABLE);
-        fillQuestionsTable();
+//        final String SQL_CREATE_QUESTIONS_TABLE = "CREATE TABLE " +
+//                QuestionsTable.TABLE_NAME + " ( " +
+//                QuestionsTable._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+//                QuestionsTable.COLUMN_QUESTION + " TEXT, " +
+//                QuestionsTable.COLUMN_OPTION1 + " TEXT, " +
+//                QuestionsTable.COLUMN_OPTION2 + " TEXT, " +
+//                QuestionsTable.COLUMN_OPTION3 + " TEXT, " +
+//                QuestionsTable.COLUMN_OPTION4 + " TEXT, " +
+//                QuestionsTable.COLUMN_ANSWER_NR + " TEXT" +
+//                ")";
+//
+//        db.execSQL(SQL_CREATE_QUESTIONS_TABLE);
+//        createDatabase();
     }
 
     @Override
@@ -45,31 +53,51 @@ public class QuizDbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    private void fillQuestionsTable() {
-        Question q1 = new Question("Select the reserved keyword in python", "else", "import", "All of these","test", "test");
-        addQuestion(q1);
-        Question q2 = new Question("Which of the following symbols are used for comments in Python?", "//", "#", "/**/","test", "test");
-        addQuestion(q2);
-        Question q3 = new Question("Are nested if-else are allowed in Python?", "Yes", "No", "None of these", "test", "test");
-        addQuestion(q3);
-        Question q4 = new Question("How to find the last element of list in Python? Assume `bikes` is the name of list.", "bikes[0]", "bikes[-1]", "bikes[lpos]", "test", "test");
-        addQuestion(q4);
-        Question q5 = new Question("What is correct syntax to copy one list into another?", "listA = listB[]", "listA = listB[:]", "listA = listB[]()", "test", "test");
-        addQuestion(q5);
+    public void createDatabase() {
+        boolean dbExist = checkDatabase();
+        if (!dbExist) {
+            this.getReadableDatabase();
+            copyDatabase();
+        }
     }
 
-    private void addQuestion(Question question) {
-        ContentValues cv = new ContentValues();
-        cv.put(QuestionsTable.COLUMN_QUESTION, question.getQuestion());
-        cv.put(QuestionsTable.COLUMN_OPTION1, question.getOption1());
-        cv.put(QuestionsTable.COLUMN_OPTION2, question.getOption2());
-        cv.put(QuestionsTable.COLUMN_OPTION3, question.getOption3());
-        cv.put(QuestionsTable.COLUMN_OPTION4, question.getOption4());
-        cv.put(QuestionsTable.COLUMN_ANSWER_NR, question.getAnswerNr());
-        db.insert(QuestionsTable.TABLE_NAME, null, cv);
+    private boolean checkDatabase() {
+        SQLiteDatabase checkDB = null;
+        try {
+            String dbPath = context.getDatabasePath(DATABASE_NAME).getPath();
+            checkDB = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+        } catch (Exception e) {
+            // Database does not exist yet.
+        }
+
+        if (checkDB != null) {
+            checkDB.close();
+        }
+
+        return checkDB != null;
     }
 
-    public List<Question> getAllQuestions() {
+    private void copyDatabase() {
+        try {
+            InputStream inputStream = context.getAssets().open(DATABASE_NAME);
+            String outFileName = context.getDatabasePath(DATABASE_NAME).getPath();
+            OutputStream outputStream = new FileOutputStream(outFileName);
+
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) > 0) {
+                outputStream.write(buffer, 0, length);
+            }
+
+            outputStream.flush();
+            outputStream.close();
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Question>   getAllQuestions() {
         List<Question> questionList = new ArrayList<>();
         db = getReadableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM " + QuestionsTable.TABLE_NAME, null);

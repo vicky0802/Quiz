@@ -30,6 +30,7 @@ public class QuizActivity extends AppCompatActivity {
     private RadioButton rb1;
     private RadioButton rb2;
     private RadioButton rb3;
+    private RadioButton rb4;
     private Button buttonConfirmNext;
 
     private ColorStateList textColorDefaultRb;
@@ -61,12 +62,14 @@ public class QuizActivity extends AppCompatActivity {
         rb1 = findViewById(R.id.radio_button1);
         rb2 = findViewById(R.id.radio_button2);
         rb3 = findViewById(R.id.radio_button3);
+        rb4 = findViewById(R.id.radio_button4);
         buttonConfirmNext = findViewById(R.id.button_confirm_next);
 
         textColorDefaultRb = rb1.getTextColors();
         textColorDefaultCd = textViewCountDown.getTextColors();
 
         QuizDbHelper dbHelper = new QuizDbHelper(this);
+        dbHelper.createDatabase();
         questionList = dbHelper.getAllQuestions();
         questionCountTotal = questionList.size();
         Collections.shuffle(questionList);
@@ -77,7 +80,7 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!answered) {
-                    if (rb1.isChecked() || rb2.isChecked() || rb3.isChecked()) {
+                    if (rb1.isChecked() || rb2.isChecked() || rb3.isChecked() || rb4.isChecked()) {
                         checkAnswer();
                     } else {
                         Toast.makeText(QuizActivity.this, "Please select an answer", Toast.LENGTH_SHORT).show();
@@ -93,6 +96,7 @@ public class QuizActivity extends AppCompatActivity {
         rb1.setTextColor(textColorDefaultRb);
         rb2.setTextColor(textColorDefaultRb);
         rb3.setTextColor(textColorDefaultRb);
+        rb4.setTextColor(textColorDefaultRb);
         rbGroup.clearCheck();
 
         if (questionCounter < questionCountTotal) {
@@ -102,6 +106,7 @@ public class QuizActivity extends AppCompatActivity {
             rb1.setText(currentQuestion.getOption1());
             rb2.setText(currentQuestion.getOption2());
             rb3.setText(currentQuestion.getOption3());
+            rb4.setText(currentQuestion.getOption4());
 
             questionCounter++;
             textViewQuestionCount.setText("Question: " + questionCounter + "/" + questionCountTotal);
@@ -111,9 +116,7 @@ public class QuizActivity extends AppCompatActivity {
             timeLeftInMillis = COUNTDOWN_IN_MILLIS;
             startCountDown();
         } else {
-
             finishQuiz();
-
         }
     }
 
@@ -155,8 +158,9 @@ public class QuizActivity extends AppCompatActivity {
 
         countDownTimer.cancel();
 
-        RadioButton rbSelected = findViewById(rbGroup.getCheckedRadioButtonId());
+        RadioButton rbSelected = ((RadioButton) findViewById(rbGroup.getCheckedRadioButtonId()));
         String answerNr = rbSelected.getText().toString();
+
 
         if (answerNr.equals(currentQuestion.getAnswerNr())) {
             score++;
@@ -170,6 +174,7 @@ public class QuizActivity extends AppCompatActivity {
         rb1.setTextColor(Color.RED);
         rb2.setTextColor(Color.RED);
         rb3.setTextColor(Color.RED);
+        rb4.setTextColor(Color.RED);
 
 //        switch (currentQuestion.getAnswerNr()) {
 //            case 1:
