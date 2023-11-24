@@ -1,183 +1,131 @@
-package com.example.quiz;
+package com.example.quiz
 
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.View
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.quiz.databinding.ActivityQuizBinding
+import java.util.Collections
+import java.util.Locale
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.example.quiz.databinding.ActivityQuizBinding;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
-public class QuizActivity extends AppCompatActivity {
-    public static final String EXTRA_SCORE = "extraScore";
-    public static final String FUll_SCORE = "fullScore";
-    private static final long COUNTDOWN_IN_MILLIS = 30000;
-    ActivityQuizBinding binding;
-
-    private ColorStateList textColorDefaultRb;
-    private ColorStateList textColorDefaultCd;
-
-    private CountDownTimer countDownTimer;
-    private long timeLeftInMillis;
-
-    private List<Question> questionList;
-    private int questionCounter;
-    private int questionCountTotal;
-    private Question currentQuestion;
-
-    private int score;
-    private boolean answered;
-
-    private long backPressedTime;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityQuizBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        textColorDefaultRb = binding.optionA.getTextColors();
-        textColorDefaultCd = binding.textViewCountdown.getTextColors();
-
-        QuizDbHelper dbHelper = new QuizDbHelper(this);
-        dbHelper.createDatabase();
-        questionList = dbHelper.getAllQuestions();
-        questionCountTotal = questionList.size();
-        Collections.shuffle(questionList);
-
-        showNextQuestion();
-
-        binding.optionA.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAnswer(binding.optionA.getTag().toString());
-            }
-        });
-        binding.optionB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAnswer(binding.optionB.getTag().toString());
-            }
-        });
-        binding.optionC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAnswer(binding.optionC.getTag().toString());
-            }
-        });
-        binding.optionD.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkAnswer(binding.optionD.getTag().toString());
-            }
-        });
-
+class QuizActivity : AppCompatActivity() {
+    var binding: ActivityQuizBinding? = null
+    private var textColorDefaultRb: ColorStateList? = null
+    private var textColorDefaultCd: ColorStateList? = null
+    private var countDownTimer: CountDownTimer? = null
+    private var timeLeftInMillis: Long = 0
+    private var questionList: ArrayList<Question?>? = null
+    private var questionCounter = 0
+    private var questionCountTotal = 0
+    private var currentQuestion: Question? = null
+    private var score = 0
+    private var answered = false
+    private var backPressedTime: Long = 0
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityQuizBinding.inflate(layoutInflater)
+        setContentView(binding?.root)
+        textColorDefaultRb = binding?.optionA?.textColors
+        textColorDefaultCd = binding?.textViewCountdown?.textColors
+        val dbHelper = QuizDbHelper(this)
+        dbHelper.createDatabase()
+        questionList = dbHelper.allQuestions as ArrayList<Question?>?
+        questionCountTotal = questionList?.size ?: 0
+        Collections.shuffle(questionList)
+        showNextQuestion()
+        binding?.optionA?.setOnClickListener { checkAnswer(binding?.optionA?.tag.toString()) }
+        binding?.optionB?.setOnClickListener { checkAnswer(binding?.optionB?.tag.toString()) }
+        binding?.optionC?.setOnClickListener { checkAnswer(binding?.optionC?.tag.toString()) }
+        binding?.optionD?.setOnClickListener { checkAnswer(binding?.optionD?.tag.toString()) }
     }
 
-    private void showNextQuestion() {
-        binding.optionA.setTextColor(textColorDefaultRb);
-        binding.optionB.setTextColor(textColorDefaultRb);
-        binding.optionC.setTextColor(textColorDefaultRb);
-        binding.optionB.setTextColor(textColorDefaultRb);
-
+    private fun showNextQuestion() {
+        binding?.optionA?.setTextColor(textColorDefaultRb)
+        binding?.optionB?.setTextColor(textColorDefaultRb)
+        binding?.optionC?.setTextColor(textColorDefaultRb)
+        binding?.optionB?.setTextColor(textColorDefaultRb)
         if (questionCounter < questionCountTotal) {
-            currentQuestion = questionList.get(questionCounter);
-
-            binding.textViewQuestion.setText(currentQuestion.getQuestion());
-            setOption(binding.optionA, "A. ", currentQuestion.getOption1());
-            setOption(binding.optionB, "B. ", currentQuestion.getOption2());
-            setOption(binding.optionC, "C. ", currentQuestion.getOption3());
-            setOption(binding.optionD, "D. ", currentQuestion.getOption4());
-
-            questionCounter++;
-            binding.textViewQuestionCount.setText("Question: " + questionCounter + "/" + questionCountTotal);
-            answered = false;
-
-            timeLeftInMillis = COUNTDOWN_IN_MILLIS;
-            startCountDown();
+            currentQuestion = questionList?.get(questionCounter)
+            binding?.textViewQuestion?.text = currentQuestion?.question
+            setOption(binding?.optionA, "A. ", currentQuestion?.option1)
+            setOption(binding?.optionB, "B. ", currentQuestion?.option2)
+            setOption(binding?.optionC, "C. ", currentQuestion?.option3)
+            setOption(binding?.optionD, "D. ", currentQuestion?.option4)
+            questionCounter++
+            binding?.textViewQuestionCount?.text = "Question: $questionCounter/$questionCountTotal"
+            answered = false
+            timeLeftInMillis = COUNTDOWN_IN_MILLIS
+            startCountDown()
         } else {
-            finishQuiz();
+            finishQuiz()
         }
     }
 
-    private void setOption(TextView optionView, String suffix, String option) {
-        if (option==null) {
-            optionView.setVisibility(View.GONE);
+    private fun setOption(optionView: TextView?, suffix: String, option: String?) {
+        if (option == null) {
+            optionView?.visibility = View.GONE
         } else {
-            optionView.setVisibility(View.VISIBLE);
+            optionView?.visibility = View.VISIBLE
         }
-        optionView.setText(suffix + option);
-        optionView.setTag(option);
+        optionView?.text = suffix + option
+        optionView?.tag = option
     }
 
-    private void startCountDown() {
-        countDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                timeLeftInMillis = millisUntilFinished;
-                updateCountDownText();
+    private fun startCountDown() {
+        countDownTimer = object : CountDownTimer(timeLeftInMillis, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                timeLeftInMillis = millisUntilFinished
+                updateCountDownText()
             }
 
-            @Override
-            public void onFinish() {
-                timeLeftInMillis = 0;
-                updateCountDownText();
-                skipAndShowNextQuestion();
+            override fun onFinish() {
+                timeLeftInMillis = 0
+                updateCountDownText()
+                skipAndShowNextQuestion()
             }
-        }.start();
+        }.start()
     }
 
-    private void skipAndShowNextQuestion() {
-        score -= 5;
-        showNextQuestion();
+    private fun skipAndShowNextQuestion() {
+        score -= 5
+        showNextQuestion()
     }
 
-    private void updateCountDownText() {
-        int minutes = (int) (timeLeftInMillis / 1000) / 60;
-        int seconds = (int) (timeLeftInMillis / 1000) % 60;
-
-        String timeFormatted = String.format(Locale.getDefault(), "%02d", seconds);
-
-        binding.textViewCountdown.setText(timeFormatted);
-
+    private fun updateCountDownText() {
+        val minutes = (timeLeftInMillis / 1000).toInt() / 60
+        val seconds = (timeLeftInMillis / 1000).toInt() % 60
+        val timeFormatted = String.format(Locale.getDefault(), "%02d", seconds)
+        binding?.textViewCountdown?.text = timeFormatted
         if (timeLeftInMillis < 10000) {
-            binding.textViewCountdown.setTextColor(Color.RED);
+            binding?.textViewCountdown?.setTextColor(Color.RED)
         } else {
-            binding.textViewCountdown.setTextColor(textColorDefaultCd);
+            binding?.textViewCountdown?.setTextColor(textColorDefaultCd)
         }
     }
 
-    private void checkAnswer(String answerNr) {
-        answered = true;
-
-        countDownTimer.cancel();
-
-
-        if (answerNr.equals(currentQuestion.getAnswerNr())) {
-            score += 20;
-            binding.textViewScore.setText("Score: " + score);
+    private fun checkAnswer(answerNr: String) {
+        answered = true
+        countDownTimer?.cancel()
+        if (answerNr == currentQuestion?.answerNr) {
+            score += 20
+            binding?.textViewScore?.text = "Score: $score"
         } else {
-            score -= 10;
+            score -= 10
         }
-        showNextQuestion();
-//        showSolution();
-
+        showNextQuestion()
+        //        showSolution();
     }
 
-    private void showSolution() {
-        binding.optionA.setTextColor(Color.RED);
-        binding.optionB.setTextColor(Color.RED);
-        binding.optionC.setTextColor(Color.RED);
-        binding.optionD.setTextColor(Color.RED);
+    private fun showSolution() {
+        binding?.optionA?.setTextColor(Color.RED)
+        binding?.optionB?.setTextColor(Color.RED)
+        binding?.optionC?.setTextColor(Color.RED)
+        binding?.optionD?.setTextColor(Color.RED)
 
 //        switch (currentQuestion.getAnswerNr()) {
 //            case 1:
@@ -201,46 +149,50 @@ public class QuizActivity extends AppCompatActivity {
 //        }
     }
 
-    private void finishQuiz() {
+    private fun finishQuiz() {
 //        level();
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        resultIntent.putExtra(EXTRA_SCORE, score);
-        resultIntent.putExtra(FUll_SCORE, questionCountTotal * 20);
-        setResult(RESULT_OK, resultIntent);
-        finish();
+        val resultIntent = Intent(this, ResultActivity::class.java)
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        resultIntent.putExtra(EXTRA_SCORE, score)
+        resultIntent.putExtra(FUll_SCORE, questionCountTotal * 20)
+        setResult(RESULT_OK, resultIntent)
+        finish()
     }
 
-    private void level() {
+    private fun level() {
         if (score == 1) {
-            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show()
         } else if (score == 2) {
-            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show()
         } else if (score == 3) {
-            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show()
         } else if (score == 4) {
-            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show()
         } else if (score == 5) {
-            Toast.makeText(this, "Your next level Predicted is Hard", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your next level Predicted is Hard", Toast.LENGTH_SHORT).show()
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    override fun onBackPressed() {
         if (backPressedTime + 2000 > System.currentTimeMillis()) {
-            finishQuiz();
+            finishQuiz()
         } else {
-            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show()
         }
-
-        backPressedTime = System.currentTimeMillis();
+        backPressedTime = System.currentTimeMillis()
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    override fun onDestroy() {
+        super.onDestroy()
         if (countDownTimer != null) {
-            countDownTimer.cancel();
+            countDownTimer?.cancel()
         }
+    }
+
+
+    companion object {
+        const val EXTRA_SCORE = "extraScore"
+        const val FUll_SCORE = "fullScore"
+        private const val COUNTDOWN_IN_MILLIS: Long = 30000
     }
 }

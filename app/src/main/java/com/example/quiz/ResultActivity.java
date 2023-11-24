@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+public class ResultActivity extends AppCompatActivity {
     private static final int REQUEST_CODE_QUIZ = 1;
 
     public static final String SHARED_PREFS = "sharedPrefs";
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startQuiz() {
-        Intent intent = new Intent(MainActivity.this, QuizActivity.class);
+        Intent intent = new Intent(ResultActivity.this, QuizActivity.class);
         startActivityForResult(intent, REQUEST_CODE_QUIZ);
     }
 
