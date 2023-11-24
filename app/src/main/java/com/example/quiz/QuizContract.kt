@@ -1,19 +1,15 @@
-package com.example.quiz;
+package com.example.quiz
 
-import android.provider.BaseColumns;
+import android.provider.BaseColumns
 
-public final class QuizContract {
-
-    private QuizContract() {
-    }
-
-    public static class QuestionsTable implements BaseColumns {
-        public static final String TABLE_NAME = "quiz";
-        public static final String COLUMN_QUESTION = "question";
-        public static final String COLUMN_OPTION1 = "opt1";
-        public static final String COLUMN_OPTION2 = "opt2";
-        public static final String COLUMN_OPTION3 = "opt3";
-        public static final String COLUMN_OPTION4 = "opt4";
-        public static final String COLUMN_ANSWER_NR = "opt1";
+class QuizContract private constructor() {
+    object QuestionsTable : BaseColumns {
+        const val TABLE_NAME = "quiz"
+        const val COLUMN_QUESTION = "question"
+        const val COLUMN_OPTION1 = "opt1"
+        const val COLUMN_OPTION2 = "opt2"
+        const val COLUMN_OPTION3 = "opt3"
+        const val COLUMN_OPTION4 = "opt4"
+        const val COLUMN_ANSWER_NR = "opt1"
     }
 }

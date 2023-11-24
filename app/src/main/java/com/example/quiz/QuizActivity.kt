@@ -52,12 +52,18 @@ class QuizActivity : AppCompatActivity() {
         if (questionCounter < questionCountTotal) {
             currentQuestion = questionList?.get(questionCounter)
             binding?.textViewQuestion?.text = currentQuestion?.question
-            setOption(binding?.optionA, "A. ", currentQuestion?.option1)
-            setOption(binding?.optionB, "B. ", currentQuestion?.option2)
-            setOption(binding?.optionC, "C. ", currentQuestion?.option3)
-            setOption(binding?.optionD, "D. ", currentQuestion?.option4)
+            val optionList = ArrayList<String?>()
+            optionList.add(currentQuestion?.option1)
+            optionList.add(currentQuestion?.option2)
+            optionList.add(currentQuestion?.option3)
+            optionList.add(currentQuestion?.option4)
+            optionList.shuffle()
+            setOption(binding?.optionA, "A. ", optionList.get(0))
+            setOption(binding?.optionB, "B. ", optionList.get(1))
+            setOption(binding?.optionC, "C. ", optionList.get(2))
+            setOption(binding?.optionD, "D. ", optionList.get(3))
             questionCounter++
-            binding?.textViewQuestionCount?.text = "Question: $questionCounter/$questionCountTotal"
+            binding?.textViewQuestionCount?.text = "${getString(R.string.question)}: $questionCounter/$questionCountTotal"
             answered = false
             timeLeftInMillis = COUNTDOWN_IN_MILLIS
             startCountDown()
@@ -113,7 +119,7 @@ class QuizActivity : AppCompatActivity() {
         countDownTimer?.cancel()
         if (answerNr == currentQuestion?.answerNr) {
             score += 20
-            binding?.textViewScore?.text = "Score: $score"
+            binding?.textViewScore?.text = "${getString(R.string.score)}: $score"
         } else {
             score -= 10
         }
@@ -155,29 +161,14 @@ class QuizActivity : AppCompatActivity() {
         resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         resultIntent.putExtra(EXTRA_SCORE, score)
         resultIntent.putExtra(FUll_SCORE, questionCountTotal * 20)
-        setResult(RESULT_OK, resultIntent)
-        finish()
-    }
-
-    private fun level() {
-        if (score == 1) {
-            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show()
-        } else if (score == 2) {
-            Toast.makeText(this, "Your next level Predicted is Easy", Toast.LENGTH_SHORT).show()
-        } else if (score == 3) {
-            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show()
-        } else if (score == 4) {
-            Toast.makeText(this, "Your next level Predicted is Medium", Toast.LENGTH_SHORT).show()
-        } else if (score == 5) {
-            Toast.makeText(this, "Your next level Predicted is Hard", Toast.LENGTH_SHORT).show()
-        }
+        startActivity(resultIntent)
     }
 
     override fun onBackPressed() {
         if (backPressedTime + 2000 > System.currentTimeMillis()) {
-            finishQuiz()
+            super.onBackPressed()
         } else {
-            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.press_back_again_to_exit), Toast.LENGTH_SHORT).show()
         }
         backPressedTime = System.currentTimeMillis()
     }

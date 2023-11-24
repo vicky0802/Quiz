@@ -1,73 +1,40 @@
-package com.example.quiz;
+package com.example.quiz
 
-import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent
+import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.quiz.databinding.ActivityResultBinding
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-
-public class ResultActivity extends AppCompatActivity {
-    private static final int REQUEST_CODE_QUIZ = 1;
-
-    public static final String SHARED_PREFS = "sharedPrefs";
-    public static final String KEY_HIGHSCORE = "keyHighscore";
-
-    private TextView textViewHighscore;
-
-    private int highscore;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        textViewHighscore = findViewById(R.id.text_view_highscore);
-        loadHighscore();
-
-        Button buttonStartQuiz = findViewById(R.id.button_start_quiz);
-        buttonStartQuiz.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startQuiz();
-            }
-        });
+class ResultActivity : AppCompatActivity() {
+    private var textViewHighscore: TextView? = null
+    private var highscore = 0
+    var binding:ActivityResultBinding?=null
+    private var backPressedTime: Long = 0
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityResultBinding.inflate(layoutInflater)
+        setContentView(binding?.root)
+        binding?.txtSetScore?.text = "${getString(R.string.your_score_is)} ${intent?.getIntExtra(QuizActivity.EXTRA_SCORE, 0)}/${intent?.getIntExtra(QuizActivity.FUll_SCORE, 0)}"
+        binding?.txtStartOver?.setOnClickListener { loadQuiz() }
     }
 
-    private void startQuiz() {
-        Intent intent = new Intent(ResultActivity.this, QuizActivity.class);
-        startActivityForResult(intent, REQUEST_CODE_QUIZ);
+    private fun loadQuiz() {
+        val resultIntent = Intent(this, QuizActivity::class.java)
+        resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(resultIntent)
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    companion object {
+    }
 
-        if (requestCode == REQUEST_CODE_QUIZ) {
-            if (resultCode == RESULT_OK) {
-                int score = data.getIntExtra(QuizActivity.EXTRA_SCORE, 0);
-                if (score > highscore) {
-                    updateHighscore(score);
-                }
-            }
+    override fun onBackPressed() {
+        if (backPressedTime + 2000 > System.currentTimeMillis()) {
+            super.onBackPressed()
+        } else {
+            Toast.makeText(this, getString(R.string.press_back_again_to_exit), Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private void loadHighscore() {
-        SharedPreferences prefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        highscore = prefs.getInt(KEY_HIGHSCORE, 0);
-        textViewHighscore.setText("Highscore: " + highscore);
-    }
-
-    private void updateHighscore(int highscoreNew) {
-        highscore = highscoreNew;
-        textViewHighscore.setText("Highscore: " + highscore);
-
-        SharedPreferences prefs = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(KEY_HIGHSCORE, highscore);
-        editor.apply();
+        backPressedTime = System.currentTimeMillis()
     }
 }

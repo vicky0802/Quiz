@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">My Awesome Quiz</string>
+    <string name="your_score_is">Your score is</string>
+    <string name="buy_another_heineken_to_try_again_and_take_the_ipad_home">Buy another Heineken to try again and take the iPad home.</string>
+    <string name="start_over">Start Over</string>
+    <string name="game_over">Game Over!</string>
+    <string name="question">Question</string>
+    <string name="score">Score</string>
+    <string name="press_back_again_to_exit">Press back again to exit</string>
 </resources>
